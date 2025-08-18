@@ -1,0 +1,133 @@
+/* ===== HEADER GENERAL ===== */
+.header {
+  background: #000; /* pure black for elegance */
+  color: #fff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.05); /* subtle shadow */
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* ===== LOGO ===== */
+.logo a {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color 0.3s ease;
+}
+
+.logo a:hover {
+  color: #aaa; /* subtle hover */
+}
+
+/* ===== NAVIGATION ===== */
+.nav {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.nav a {
+  color: #f5f5f5;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+/* underline hover effect */
+.nav a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0%;
+  height: 2px;
+  background: #fff;
+  transition: width 0.3s ease;
+}
+
+.nav a:hover {
+  color: #fff;
+}
+
+.nav a:hover::after {
+  width: 100%;
+}
+
+/* ===== LOGOUT BUTTON ===== */
+.logout-btn {
+  background: transparent;
+  border: 1px solid #fff;
+  padding: 0.5rem 1.2rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #fff;
+  color: #000;
+}
+
+/* ===== MOBILE MENU ===== */
+.menu-toggle {
+  display: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #fff;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav {
+    display: none;
+    position: absolute;
+    top: 70px;
+    right: 20px;
+    flex-direction: column;
+    background: #111;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    gap: 1rem;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .nav.open {
+    display: flex;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+}
+
+/* ===== ANIMATION ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
