@@ -1,0 +1,40 @@
+.cd-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.cd-back-btn {
+  margin-bottom: 20px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.cd-grid {
+  display: flex;
+  gap: 20px;
+}
+
+.cd-main-content {
+  flex: 3;
+}
+
+.cd-sidebar {
+  flex: 1;
+  border-left: 1px solid #ccc;
+  padding-left: 20px;
+}
+
+.cd-enroll-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+}
+
+.cd-enrolled {
+  color: green;
+  font-weight: bold;
+}
