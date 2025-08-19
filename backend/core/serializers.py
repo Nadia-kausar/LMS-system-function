@@ -8,8 +8,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 class CourseSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source="instructor.username", read_only=True)
+    students = UserSerializer(read_only=True, many=True)  # Include enrolled students
     students_count = serializers.SerializerMethodField()
-    students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)  # <--- add this
 
     class Meta:
         model = Course
@@ -22,8 +22,8 @@ class CourseSerializer(serializers.ModelSerializer):
             "duration",
             "instructor",
             "instructor_name",
+            "students",
             "students_count",
-            "students",           # <--- include students
             "rating",
         ]
 

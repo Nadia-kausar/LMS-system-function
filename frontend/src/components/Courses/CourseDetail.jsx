@@ -15,11 +15,7 @@ const CourseDetail = () => {
       try {
         const res = await API.get(`courses/${id}/`);
         setCourse(res.data);
-
-        if (user) {
-          const enrolledIds = res.data.students || [];
-          setIsEnrolled(enrolledIds.includes(user.id));
-        }
+        if (user) setIsEnrolled(res.data.students?.includes(user.id));
       } catch (err) {
         console.error(err);
       }
@@ -28,12 +24,13 @@ const CourseDetail = () => {
   }, [id, user]);
 
   const handleEnroll = async () => {
+    if (!user) return alert("Please login first");
     try {
-      await API.post(`courses/${id}/enroll/`);
+      await API.post(`courses/${id}/enroll/`, { student_id: user.id });
       setIsEnrolled(true);
       alert("You are enrolled successfully!");
     } catch (err) {
-      alert("Enrollment failed!");
+      alert(err.response?.data?.error || "Enrollment failed!");
     }
   };
 

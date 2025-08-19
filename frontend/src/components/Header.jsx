@@ -9,14 +9,14 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();              // clear user from context + localStorage
-    navigate("/login");    // send back to login page
+    logout();
+    navigate("/login");
   };
 
   return (
     <header className="header">
       <div className="header-container">
-        {/* Logo redirects based on role */}
+        {/* Logo */}
         <div className="logo">
           <Link
             to={
@@ -31,9 +31,18 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* Navigation Links */}
+        {/* Navigation */}
         <nav className={`nav ${isOpen ? "open" : ""}`}>
-          {/* Student Menu */}
+          {/* Instructor Links */}
+          {user && user.is_instructor && (
+            <>
+              <Link to="/instructor-home">Dashboard</Link>
+              <Link to="/instructor-courses">Courses</Link>
+              <Link to="/instructor-enrollments">Enrollments</Link>
+            </>
+          )}
+
+          {/* Student Links */}
           {user && !user.is_instructor && (
             <>
               <Link to="/student-home">Home</Link>
@@ -43,17 +52,7 @@ const Header = () => {
             </>
           )}
 
-          {/* Instructor Menu */}
-          {user && user.is_instructor && (
-            <>
-              <Link to="/instructor-home">Dashboard</Link>
-              <Link to="/courses">Courses List</Link>
-              <Link to="/students-enrollments">Enrollments</Link>
-              <Link to="/certificates">Certificates</Link>
-            </>
-          )}
-
-          {/* Public Menu (not logged in) */}
+          {/* Public Links */}
           {!user && (
             <>
               <Link to="/login">Login</Link>
@@ -61,7 +60,7 @@ const Header = () => {
             </>
           )}
 
-          {/* Logout Button (works for both roles) */}
+          {/* Logout Button */}
           {user && (
             <button className="logout-btn" onClick={handleLogout}>
               Logout
@@ -69,7 +68,7 @@ const Header = () => {
           )}
         </nav>
 
-        {/* Mobile Menu Toggle */}
+        {/* Mobile Menu */}
         <div className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
           ☰
         </div>
