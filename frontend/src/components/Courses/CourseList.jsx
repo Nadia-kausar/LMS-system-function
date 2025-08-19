@@ -1,53 +1,45 @@
+// src/components/Courses/CourseList.jsx
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // for navigation
 import API from "../../api/api";
-import CourseCard from "./CourseCard";
 import { AuthContext } from "../../context/AuthContext";
 
 const CourseList = () => {
   const { user } = useContext(AuthContext);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  const fetchCourses = async () => {
-    try {
-      const res = await API.get("courses/");
-      console.log("Courses fetched:", res.data); // Debug API response
-      setCourses(Array.isArray(res.data) ? res.data : []);
-    } catch (err) {
-      console.error("Failed to load courses", err);
-      setCourses([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const [error, setError] = useState(null);
+  const navigate = useNavigate(); // hook to navigate
 
   useEffect(() => {
     fetchCourses();
   }, []);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this course?")) return;
+  const fetchCourses = async () => {
     try {
-      await API.delete(`courses/${id}/`);
-      setCourses((prev) => prev.filter((c) => c.id !== id));
+      const res = await API.get("courses/");
+      setCourses(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      alert("Failed to delete course");
+      console.error("Failed to load courses:", err);
+      setError("Failed to load courses. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) return <p>Loading courses...</p>;
+  if (error) return <p style={{ color: "red" }}>{error}</p>;
 
   return (
     <div className="course-list">
       <h2>All Courses</h2>
       {courses.length > 0 ? (
         courses.map((course) => (
-          <CourseCard
-            key={course.id}
-            course={course}
-            user={user}
-            onDelete={handleDelete}
-          />
+          <div key={course.id} style={{ border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
+            <h3>{course.title}</h3>
+            <p>{course.description}</p>
+            <button onClick={() => navigate(`/courses/${course.id}`)}>View Details</button>
+          </div>
         ))
       ) : (
         <p>No courses available.</p>
