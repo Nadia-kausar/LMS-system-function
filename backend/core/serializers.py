@@ -1,34 +1,31 @@
 from rest_framework import serializers
-from .models import User
-from django.contrib.auth import authenticate
+from .models import User, Course
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username", "email", "is_instructor", "is_student")
 
-class RegisterSerializer(serializers.ModelSerializer):
+class CourseSerializer(serializers.ModelSerializer):
+    instructor_name = serializers.CharField(source="instructor.username", read_only=True)
+    students_count = serializers.SerializerMethodField()
+    students = serializers.PrimaryKeyRelatedField(many=True, read_only=True)  # <--- add this
+
     class Meta:
-        model = User
-        fields = ("id", "username", "email", "password", "is_instructor", "is_student")
-        extra_kwargs = {"password": {"write_only": True}}
+        model = Course
+        fields = [
+            "id",
+            "title",
+            "description",
+            "level",
+            "price",
+            "duration",
+            "instructor",
+            "instructor_name",
+            "students_count",
+            "students",           # <--- include students
+            "rating",
+        ]
 
-    def create(self, validated_data):
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-            is_instructor=validated_data.get("is_instructor", False),
-            is_student=validated_data.get("is_student", True),
-        )
-        return user
-
-class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
-
-    def validate(self, data):
-        user = authenticate(username=data["username"], password=data["password"])
-        if not user:
-            raise serializers.ValidationError("Invalid Credentials")
-        return user
+    def get_students_count(self, obj):
+        return obj.students.count()
