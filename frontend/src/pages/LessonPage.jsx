@@ -15,6 +15,15 @@ const LessonPage = () => {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Helper to extract YouTube video ID
+  const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  };
+
   // Fetch course and lessons
   const fetchData = async () => {
     try {
@@ -40,8 +49,8 @@ const LessonPage = () => {
     fetchData();
   }, [courseId, user]);
 
+  // Reload and play video whenever selectedLesson changes
   useEffect(() => {
-    // Reload and play video whenever selectedLesson changes
     if (videoRef.current) {
       videoRef.current.load();
       videoRef.current.play().catch(() => {
@@ -95,7 +104,24 @@ const LessonPage = () => {
               <p className="lesson-duration">
                 <strong>Duration:</strong> {selectedLesson.duration || "N/A"}
               </p>
-              {selectedLesson.video_url && (
+
+              {/* YouTube Video */}
+              {getYouTubeId(selectedLesson.video) && (
+                <div className="lesson-video-container">
+                  <iframe
+                    width="100%"
+                    height="480"
+                    src={`https://www.youtube.com/embed/${getYouTubeId(selectedLesson.video)}`}
+                    title={selectedLesson.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              )}
+
+              {/* Local uploaded video */}
+              {!getYouTubeId(selectedLesson.video) && selectedLesson.video_url && (
                 <video
                   ref={videoRef}
                   controls
