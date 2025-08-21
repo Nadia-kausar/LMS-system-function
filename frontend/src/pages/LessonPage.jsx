@@ -15,15 +15,6 @@ const LessonPage = () => {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Helper to extract YouTube video ID
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    const regExp =
-      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11 ? match[2] : null;
-  };
-
   // Fetch course and lessons
   const fetchData = async () => {
     try {
@@ -33,7 +24,9 @@ const LessonPage = () => {
       const lessonsRes = await API.get(`courses/${courseId}/lessons/`);
       setLessons(lessonsRes.data);
 
-      if (lessonsRes.data.length > 0) setSelectedLesson(lessonsRes.data[0]);
+      if (lessonsRes.data.length > 0) {
+        setSelectedLesson(lessonsRes.data[0]);
+      }
       setLoading(false);
     } catch (err) {
       console.error("Error fetching course or lessons:", err);
@@ -90,7 +83,6 @@ const LessonPage = () => {
               onClick={() => setSelectedLesson(lesson)}
             >
               <h3>{lesson.title}</h3>
-              <p className="lesson-duration">{lesson.duration || "N/A"}</p>
             </div>
           ))}
         </div>
@@ -101,27 +93,9 @@ const LessonPage = () => {
             <>
               <h2 className="lesson-title">{selectedLesson.title}</h2>
               <p className="lesson-description">{selectedLesson.content}</p>
-              <p className="lesson-duration">
-                <strong>Duration:</strong> {selectedLesson.duration || "N/A"}
-              </p>
 
-              {/* YouTube Video */}
-              {getYouTubeId(selectedLesson.video) && (
-                <div className="lesson-video-container">
-                  <iframe
-                    width="100%"
-                    height="480"
-                    src={`https://www.youtube.com/embed/${getYouTubeId(selectedLesson.video)}`}
-                    title={selectedLesson.title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                </div>
-              )}
-
-              {/* Local uploaded video */}
-              {!getYouTubeId(selectedLesson.video) && selectedLesson.video_url && (
+              {/* Uploaded video */}
+              {selectedLesson.video_file ? (
                 <video
                   ref={videoRef}
                   controls
@@ -130,9 +104,11 @@ const LessonPage = () => {
                   onEnded={handleVideoEnd}
                   preload="auto"
                 >
-                  <source src={selectedLesson.video_url} type="video/mp4" />
+                  <source src={selectedLesson.video_file} type="video/mp4" />
                   Your browser does not support the video tag.
                 </video>
+              ) : (
+                <p>No video available for this lesson.</p>
               )}
             </>
           ) : (

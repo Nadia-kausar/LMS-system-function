@@ -1,10 +1,10 @@
-
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
 from .models import User, Course, Lesson, Enrollment
 from .serializers import UserSerializer, CourseSerializer, LessonSerializer, EnrollmentSerializer
+
 
 # -------------------- Auth --------------------
 class RegisterView(APIView):
@@ -30,7 +30,10 @@ class RegisterView(APIView):
             is_instructor=(role == "instructor"),
             is_student=(role == "student")
         )
-        return Response({"message": "Registration successful", "user": UserSerializer(user).data}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Registration successful", "user": UserSerializer(user).data},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class LoginView(APIView):
@@ -89,7 +92,10 @@ class CourseDetailView(APIView):
 
         data = CourseSerializer(course).data
         enrollments = Enrollment.objects.filter(course=course)
-        data["students"] = [{"id": e.student.id, "username": e.student.username, "enrolled_at": e.enrolled_at} for e in enrollments]
+        data["students"] = [
+            {"id": e.student.id, "username": e.student.username, "enrolled_at": e.enrolled_at}
+            for e in enrollments
+        ]
         data["students_count"] = enrollments.count()
         return Response(data)
 
@@ -134,7 +140,10 @@ class EnrollView(APIView):
             return Response({"error": "Already enrolled"}, status=status.HTTP_400_BAD_REQUEST)
 
         enrollment = Enrollment.objects.create(course=course, student=student)
-        return Response({"message": "Enrolled successfully", "enrollment": EnrollmentSerializer(enrollment).data}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"message": "Enrolled successfully", "enrollment": EnrollmentSerializer(enrollment).data},
+            status=status.HTTP_201_CREATED
+        )
 
 
 class MyEnrollmentsView(APIView):
@@ -161,7 +170,7 @@ class LessonListCreateView(APIView):
 
     def get(self, request, course_id):
         lessons = Lesson.objects.filter(course_id=course_id)
-        serializer = LessonSerializer(lessons, many=True)
+        serializer = LessonSerializer(lessons, many=True, context={"request": request})
         return Response(serializer.data)
 
     def post(self, request, course_id):
@@ -170,7 +179,7 @@ class LessonListCreateView(APIView):
         except Course.DoesNotExist:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = LessonSerializer(data=request.data)
+        serializer = LessonSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save(course=course)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -187,14 +196,14 @@ class LessonDetailView(APIView):
         lesson = self.get_object(pk)
         if not lesson:
             return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
-        return Response(LessonSerializer(lesson).data)
+        return Response(LessonSerializer(lesson, context={"request": request}).data)
 
     def put(self, request, pk):
         lesson = self.get_object(pk)
         if not lesson:
             return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = LessonSerializer(lesson, data=request.data, partial=True)
+        serializer = LessonSerializer(lesson, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -217,5 +226,5 @@ class MyLessonsView(APIView):
             return Response({"error": "You are not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
 
         lessons = Lesson.objects.filter(course_id=course_id)
-        serializer = LessonSerializer(lessons, many=True)
+        serializer = LessonSerializer(lessons, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)

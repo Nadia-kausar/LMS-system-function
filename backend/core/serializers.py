@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = ["id", "title", "content", "video_url", "course", "created_at"]
+        fields = ["id", "title", "content", "video_file", "course", "created_at"]  # ✅ updated
 
 
 class CourseSerializer(serializers.ModelSerializer):
