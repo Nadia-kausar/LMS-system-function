@@ -26,12 +26,32 @@ class Course(models.Model):
     instructor = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="courses"
     )
-    students = models.ManyToManyField(
-        User, related_name="enrolled_courses", blank=True
-    )
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=5.0)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
+
+
+class Lesson(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="lessons")
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    video_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.title} ({self.course.title})"
+
+
+class Enrollment(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="enrollments")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="enrollments")
+    enrolled_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = ("student", "course")  # no duplicate enrollments
+
+    def __str__(self):
+        return f"{self.student.username} → {self.course.title}"

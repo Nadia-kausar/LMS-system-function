@@ -1,0 +1,77 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.page {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9fafc;
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+.page h1 {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 30px;
+  color: #222;
+}
+
+/* Enrollments Container */
+.enrollments-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Enrollment Card */
+.enrollment-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.enrollment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.enrollment-card p {
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.enrollment-card p strong {
+  color: #222;
+}
+
+/* Empty state */
+.no-enrollments {
+  text-align: center;
+  color: #666;
+  font-size: 1.1rem;
+  margin-top: 40px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .page {
+    padding: 20px 10px;
+  }
+
+  .page h1 {
+    font-size: 1.6rem;
+  }
+
+  .enrollment-card {
+    padding: 15px;
+  }
+}

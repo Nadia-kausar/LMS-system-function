@@ -1,9 +1,10 @@
+
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth import authenticate
-from .models import User, Course
-from .serializers import UserSerializer, CourseSerializer
+from .models import User, Course, Lesson, Enrollment
+from .serializers import UserSerializer, CourseSerializer, LessonSerializer, EnrollmentSerializer
 
 # -------------------- Auth --------------------
 class RegisterView(APIView):
@@ -11,7 +12,9 @@ class RegisterView(APIView):
 
     def post(self, request):
         data = request.data
-        username, email, password = data.get("username"), data.get("email"), data.get("password")
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
         role = data.get("role", "student")
 
         if not username or not email or not password:
@@ -21,8 +24,11 @@ class RegisterView(APIView):
             return Response({"error": "Email already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = User.objects.create_user(
-            username=username, email=email, password=password,
-            is_instructor=(role=="instructor"), is_student=(role=="student")
+            username=username,
+            email=email,
+            password=password,
+            is_instructor=(role == "instructor"),
+            is_student=(role == "student")
         )
         return Response({"message": "Registration successful", "user": UserSerializer(user).data}, status=status.HTTP_201_CREATED)
 
@@ -31,7 +37,9 @@ class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        username, password = request.data.get("username"), request.data.get("password")
+        username = request.data.get("username")
+        password = request.data.get("password")
+
         if not username or not password:
             return Response({"error": "Username and password are required."}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -78,9 +86,11 @@ class CourseDetailView(APIView):
         course = self.get_object(pk)
         if not course:
             return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+
         data = CourseSerializer(course).data
-        data["students"] = UserSerializer(course.students.all(), many=True).data
-        data["students_count"] = course.students.count()
+        enrollments = Enrollment.objects.filter(course=course)
+        data["students"] = [{"id": e.student.id, "username": e.student.username, "enrolled_at": e.enrolled_at} for e in enrollments]
+        data["students_count"] = enrollments.count()
         return Response(data)
 
     def put(self, request, pk):
@@ -120,17 +130,11 @@ class EnrollView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        if student in course.students.all():
+        if Enrollment.objects.filter(course=course, student=student).exists():
             return Response({"error": "Already enrolled"}, status=status.HTTP_400_BAD_REQUEST)
 
-        course.students.add(student)
-        course.save()
-
-        return Response({
-            "message": "Enrolled successfully",
-            "course": CourseSerializer(course).data,
-            "student_name": student.username
-        })
+        enrollment = Enrollment.objects.create(course=course, student=student)
+        return Response({"message": "Enrolled successfully", "enrollment": EnrollmentSerializer(enrollment).data}, status=status.HTTP_201_CREATED)
 
 
 class MyEnrollmentsView(APIView):
@@ -140,23 +144,78 @@ class MyEnrollmentsView(APIView):
         student_id = request.query_params.get("student_id")
         if not student_id:
             return Response({"error": "Student ID required"}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             student = User.objects.get(pk=student_id)
         except User.DoesNotExist:
             return Response({"error": "Student not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        courses = student.enrolled_courses.all()
-        data = [
-            {
-                "id": c.id,
-                "title": c.title,
-                "description": c.description,
-                "level": c.level,
-                "price": c.price,
-                "duration": c.duration,
-                "instructor": c.instructor.username,
-                "enrolled_at": c.updated_at,
-            }
-            for c in courses
-        ]
-        return Response(data)
+        enrollments = Enrollment.objects.filter(student=student)
+        serializer = EnrollmentSerializer(enrollments, many=True)
+        return Response(serializer.data)
+
+
+# -------------------- Lessons --------------------
+class LessonListCreateView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, course_id):
+        lessons = Lesson.objects.filter(course_id=course_id)
+        serializer = LessonSerializer(lessons, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, course_id):
+        try:
+            course = Course.objects.get(pk=course_id)
+        except Course.DoesNotExist:
+            return Response({"error": "Course not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LessonSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(course=course)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LessonDetailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get_object(self, pk):
+        return Lesson.objects.filter(pk=pk).first()
+
+    def get(self, request, pk):
+        lesson = self.get_object(pk)
+        if not lesson:
+            return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(LessonSerializer(lesson).data)
+
+    def put(self, request, pk):
+        lesson = self.get_object(pk)
+        if not lesson:
+            return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = LessonSerializer(lesson, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        lesson = self.get_object(pk)
+        if not lesson:
+            return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+        lesson.delete()
+        return Response({"message": "Lesson deleted successfully"})
+
+
+class MyLessonsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, course_id, student_id):
+        enrolled = Enrollment.objects.filter(course_id=course_id, student_id=student_id).exists()
+        if not enrolled:
+            return Response({"error": "You are not enrolled in this course."}, status=status.HTTP_403_FORBIDDEN)
+
+        lessons = Lesson.objects.filter(course_id=course_id)
+        serializer = LessonSerializer(lessons, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

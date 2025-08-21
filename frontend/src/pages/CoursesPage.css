@@ -1,0 +1,22 @@
+.courses-page {
+  background: #fff;
+  min-height: 100vh;
+}
+
+.courses-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding: 30px 20px;
+}
+
+.courses-header h1 {
+  font-size: 2.5rem;
+  color: #000;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.courses-header p {
+  font-size: 1.1rem;
+  color: #444;
+}

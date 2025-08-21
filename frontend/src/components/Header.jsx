@@ -48,7 +48,7 @@ const Header = () => {
               <Link to="/student-home">Home</Link>
               <Link to="/courses">Courses</Link>
               <Link to="/my-enrollments">My Enrollments</Link>
-              <Link to="/certificates">Certificates</Link>
+              {/* Certificates link removed */}
             </>
           )}
 

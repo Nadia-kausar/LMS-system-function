@@ -1,15 +1,22 @@
 from rest_framework import serializers
-from .models import User, Course
+from .models import User, Course, Lesson, Enrollment
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "username", "email", "is_instructor", "is_student")
 
+
+class LessonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lesson
+        fields = ["id", "title", "content", "video_url", "course", "created_at"]
+
+
 class CourseSerializer(serializers.ModelSerializer):
     instructor_name = serializers.CharField(source="instructor.username", read_only=True)
-    students = UserSerializer(read_only=True, many=True)  # Include enrolled students
-    students_count = serializers.SerializerMethodField()
+    lessons = LessonSerializer(many=True, read_only=True)
 
     class Meta:
         model = Course
@@ -22,10 +29,15 @@ class CourseSerializer(serializers.ModelSerializer):
             "duration",
             "instructor",
             "instructor_name",
-            "students",
-            "students_count",
             "rating",
+            "lessons",
         ]
 
-    def get_students_count(self, obj):
-        return obj.students.count()
+
+class EnrollmentSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source="student.username", read_only=True)
+    course_title = serializers.CharField(source="course.title", read_only=True)
+
+    class Meta:
+        model = Enrollment
+        fields = ["id", "student", "student_name", "course", "course_title", "enrolled_at"]
