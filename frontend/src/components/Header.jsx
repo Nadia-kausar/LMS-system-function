@@ -16,7 +16,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-container">
-        {/* Logo */}
+        {/* Logo redirects based on role */}
         <div className="logo">
           <Link
             to={
@@ -31,28 +31,29 @@ const Header = () => {
           </Link>
         </div>
 
-        {/* Navigation */}
+        {/* Navigation Links */}
         <nav className={`nav ${isOpen ? "open" : ""}`}>
-          {/* Instructor Links */}
-          {user && user.is_instructor && (
-            <>
-              <Link to="/instructor-home">Dashboard</Link>
-              <Link to="/instructor-courses">Courses</Link>
-              <Link to="/instructor-enrollments">Enrollments</Link>
-            </>
-          )}
-
-          {/* Student Links */}
+          {/* Student Menu */}
           {user && !user.is_instructor && (
             <>
               <Link to="/student-home">Home</Link>
               <Link to="/courses">Courses</Link>
               <Link to="/my-enrollments">My Enrollments</Link>
-              {/* Certificates link removed */}
+              <Link to="/my-certificates">My Certificates</Link>
             </>
           )}
 
-          {/* Public Links */}
+          {/* Instructor Menu */}
+          {user && user.is_instructor && (
+            <>
+              <Link to="/instructor-home">Dashboard</Link>
+              <Link to="/instructor-courses">Courses List</Link>
+              <Link to="/instructor-enrollments">Enrollments</Link>
+              {/* Removed Issue Certificate link */}
+            </>
+          )}
+
+          {/* Public Menu */}
           {!user && (
             <>
               <Link to="/login">Login</Link>
@@ -60,7 +61,7 @@ const Header = () => {
             </>
           )}
 
-          {/* Logout Button */}
+          {/* Logout */}
           {user && (
             <button className="logout-btn" onClick={handleLogout}>
               Logout
@@ -68,7 +69,7 @@ const Header = () => {
           )}
         </nav>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu Toggle */}
         <div className="menu-toggle" onClick={() => setIsOpen(!isOpen)}>
           ☰
         </div>

@@ -1,0 +1,43 @@
+.certificates-page {
+  padding: 20px;
+}
+
+.certificate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.certificate-card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.certificate-card h3 {
+  margin: 0 0 8px;
+  color: #333;
+}
+
+.no-certificates {
+  color: #777;
+  font-style: italic;
+}
+
+.download-btn {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #0077ff;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.download-btn:hover {
+  background: #005fcc;
+}

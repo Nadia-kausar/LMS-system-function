@@ -1,32 +1,44 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { AuthProvider, AuthContext } from "./context/AuthContext";
 
+// Components
 import Header from "./components/Header";
 
-// Pages
+// Student Pages
 import HomePage from "./pages/HomePage";
-import Dashboard from "./pages/Dashboard";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import CoursesPage from "./pages/CoursesPage";
 import CourseDetailPage from "./pages/CourseDetailPage";
+import LessonPage from "./pages/LessonPage";
 import MyEnrollmentsPage from "./pages/MyEnrollmentsPage";
-import CertificatesPage from "./pages/CertificatesPage";
+import MyCertificatesPage from "./pages/MyCertificatesPage"; // ✅
+
+// Auth Pages
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 // Instructor Pages
+import Dashboard from "./pages/Dashboard";
 import InstructorCoursesPage from "./pages/InstructorCoursesPage";
 import InstructorEnrollmentsPage from "./pages/InstructorEnrollmentsPage";
-
-// Lesson Page (combined list + detail)
-import LessonPage from "./pages/LessonPage";
+import IssueCertificatePage from "./pages/IssueCertificatePage"; // ✅
 
 // -------------------- Protected Route --------------------
-const ProtectedRoute = ({ children, instructorOnly = false }) => {
+const ProtectedRoute = ({ children, instructorOnly = false, studentFallback = null }) => {
   const { user } = React.useContext(AuthContext);
 
-  if (!user) return <Navigate to="/login" />; // not logged in
-  if (instructorOnly && !user.is_instructor) return <Navigate to="/student-home" />; // only instructor
+  if (!user) return <Navigate to="/login" />;
+
+  if (instructorOnly && !user.is_instructor) {
+    return studentFallback ? studentFallback : <Navigate to="/student-home" />;
+  }
+
   return children;
 };
 
@@ -42,111 +54,133 @@ const Layout = ({ children }) => {
   );
 };
 
-// -------------------- Default Redirect Component --------------------
+// -------------------- Default Redirect --------------------
 const DefaultRedirect = () => {
   const { user } = React.useContext(AuthContext);
-
-  if (!user) return <Navigate to="/login" />; // not logged in
-  return user.is_instructor ? <Navigate to="/instructor-home" /> : <Navigate to="/student-home" />;
+  if (!user) return <Navigate to="/login" />;
+  return user.is_instructor ? (
+    <Navigate to="/instructor-home" />
+  ) : (
+    <Navigate to="/student-home" />
+  );
 };
 
 // -------------------- App --------------------
-function App() {
+function AppRoutes() {
+  const { user } = React.useContext(AuthContext);
+
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+    <Router>
+      <Layout>
+        <Routes>
+          {/* Auth */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
-            {/* Default */}
-            <Route path="/" element={<DefaultRedirect />} />
+          {/* Redirect */}
+          <Route path="/" element={<DefaultRedirect />} />
 
-            {/* Student Routes */}
-            <Route
-              path="/student-home"
-              element={
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses"
-              element={
-                <ProtectedRoute>
-                  <CoursesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses/:id"
-              element={
-                <ProtectedRoute>
-                  <CourseDetailPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/courses/:courseId/lessons"
-              element={
-                <ProtectedRoute>
-                  <LessonPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-enrollments"
-              element={
-                <ProtectedRoute>
-                  <MyEnrollmentsPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/certificates"
-              element={
-                <ProtectedRoute>
-                  <CertificatesPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Student Routes */}
+          <Route
+            path="/student-home"
+            element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses"
+            element={
+              <ProtectedRoute>
+                <CoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id"
+            element={
+              <ProtectedRoute>
+                <CourseDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:courseId/lessons"
+            element={
+              <ProtectedRoute>
+                <LessonPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-enrollments"
+            element={
+              <ProtectedRoute>
+                <MyEnrollmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-certificates"
+            element={
+              <ProtectedRoute>
+                <MyCertificatesPage studentId={user?.id} />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Instructor Routes */}
-            <Route
-              path="/instructor-home"
-              element={
-                <ProtectedRoute instructorOnly={true}>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/instructor-courses"
-              element={
-                <ProtectedRoute instructorOnly={true}>
-                  <InstructorCoursesPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/instructor-enrollments"
-              element={
-                <ProtectedRoute instructorOnly={true}>
-                  <InstructorEnrollmentsPage />
-                </ProtectedRoute>
-              }
-            />
+          {/* Instructor Routes */}
+          <Route
+            path="/instructor-home"
+            element={
+              <ProtectedRoute instructorOnly={true}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/instructor-courses"
+            element={
+              <ProtectedRoute instructorOnly={true}>
+                <InstructorCoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/instructor-enrollments"
+            element={
+              <ProtectedRoute instructorOnly={true}>
+                <InstructorEnrollmentsPage />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Catch-all */}
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </Layout>
-      </Router>
-    </AuthProvider>
+          {/* Certificates Route → Instructor gets IssueCertificatePage, Student gets MyCertificatesPage */}
+          <Route
+            path="/issue-certificate"
+            element={
+              <ProtectedRoute
+                instructorOnly={true}
+                studentFallback={<MyCertificatesPage studentId={user?.id} />}
+              >
+                <IssueCertificatePage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
+  );
+}

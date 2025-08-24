@@ -55,12 +55,22 @@ const LessonPage = () => {
   if (loading) return <p className="loading">Loading...</p>;
   if (!course) return <p className="loading">Course not found</p>;
 
-  // Autoplay next lesson when current video ends
-  const handleVideoEnd = () => {
+  // Handle video completion
+  const handleVideoEnd = async () => {
     if (!selectedLesson) return;
     const currentIndex = lessons.findIndex((l) => l.id === selectedLesson.id);
+
+    // If not last lesson → play next
     if (currentIndex < lessons.length - 1) {
       setSelectedLesson(lessons[currentIndex + 1]);
+    } else {
+      // ✅ Last lesson completed → generate certificate
+      try {
+        await API.post(`/courses/${courseId}/students/${user.id}/certificate/`);
+        navigate("/my-certificates"); // student certificate page
+      } catch (err) {
+        console.error("Error generating certificate:", err);
+      }
     }
   };
 
