@@ -10,7 +10,7 @@ const HomePage = () => {
       {/* Hero Section */}
       <div className="hero-section">
         <div className="hero-content">
-          <h1 className="hero-title">Welcome to EduLearn</h1>
+          <h1 className="hero-title">Welcome to Learning App</h1>
           <p className="hero-description">
             Unlock your potential with our comprehensive online learning platform. 
             Master new skills with expert-led courses and interactive content.
